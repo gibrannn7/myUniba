@@ -4,20 +4,21 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens;
+    use HasFactory;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'username',
@@ -28,7 +29,7 @@ class User extends Authenticatable
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -45,11 +46,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'username' => 'string',
-            'role' => 'string',
         ];
     }
-    
+
     /**
      * Get the PMB registration associated with the user.
      */
@@ -57,12 +56,20 @@ class User extends Authenticatable
     {
         return $this->hasOne(PmbRegistration::class);
     }
-    
+
     /**
      * Get the mahasiswa profile associated with the user.
      */
     public function mahasiswaProfile(): HasOne
     {
         return $this->hasOne(MahasiswaProfile::class);
+    }
+
+    /**
+     * Get the dosen profile associated with the user.
+     */
+    public function dosenProfile(): HasOne
+    {
+        return $this->hasOne(DosenProfile::class);
     }
 }
