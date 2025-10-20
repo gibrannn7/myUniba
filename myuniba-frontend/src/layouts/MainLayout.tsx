@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  GraduationCap, 
-  DollarSign, 
-  Users, 
+import {
+  LayoutDashboard,
+  GraduationCap,
+  DollarSign,
+  Users,
   Settings,
   Menu,
-  X
+  X,
+  BookUser, // Ganti ikon profil jika perlu
+  BookOpenCheck, // Ganti ikon akademik jika perlu
+  ReceiptText, // Ganti ikon keuangan jika perlu
+  CalendarCheck, // Ganti ikon absensi jika perlu
+  FileText, // Ikon untuk laporan
+  CalendarDays, // Ikon jadwal mengajar
+  ClipboardCheck, // Ikon input nilai
+  CheckSquare, // Ikon persetujuan KRS
+  Building, // Ikon Manajemen Mhs/Dosen/dll
+  ListChecks, // Ikon Manajemen Tagihan
+  BadgeCheck, // Ikon Verifikasi Pembayaran
+  Landmark, // Ikon Laporan Keuangan
+  NotebookText, // Ikon Manajemen KKM
 } from 'lucide-react';
-import { logout } from '@/services/auth';
-import { useNavigate } from 'react-router-dom';
+import { logout as logoutService } from '@/services/auth'; // Rename import
+import { useNavigate, Link } from 'react-router-dom';
+import logoUniba from '@/assets/logo uniba.png'; // Import logo
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -19,7 +33,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { user } = useAuth();
+  const { user, logout: authLogout } = useAuth(); // Ambil fungsi logout dari context
   const navigate = useNavigate();
 
   const toggleSidebar = () => {
@@ -27,29 +41,36 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+    try {
+      await logoutService(); // Panggil logout service dari API
+    } catch (error) {
+      console.error("API logout failed:", error);
+      // Tetap lanjutkan proses logout di frontend meskipun API gagal
+    } finally {
+      await authLogout(); // Panggil fungsi logout dari AuthContext
+      navigate('/login'); // Redirect ke login
+    }
   };
 
-  // Define navigation items based on user role
+  // Definisikan item navigasi berdasarkan peran pengguna
   const getNavigationItems = () => {
     if (!user) return [];
-    
-    switch(user.role) {
+
+    switch (user.role) {
       case 'mahasiswa':
         return [
           { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-          { name: 'Profil', href: '/profile', icon: Users },
-          { name: 'Akademik', href: '/akademik', icon: GraduationCap },
-          { name: 'Keuangan', href: '/keuangan', icon: DollarSign },
-          { name: 'Absensi', href: '/absensi', icon: GraduationCap },
+          { name: 'Profil', href: '/profile', icon: BookUser },
+          { name: 'Akademik', href: '/akademik', icon: BookOpenCheck }, // Sub-menu mungkin diperlukan
+          { name: 'Keuangan', href: '/keuangan', icon: ReceiptText },
+          { name: 'Absensi', href: '/absensi', icon: CalendarCheck },
         ];
       case 'dosen':
         return [
           { name: 'Dashboard', href: '/dosen/dashboard', icon: LayoutDashboard },
-          { name: 'Jadwal Mengajar', href: '/dosen/jadwal', icon: GraduationCap },
-          { name: 'Input Nilai', href: '/dosen/input-nilai', icon: GraduationCap },
-          { name: 'Persetujuan KRS', href: '/dosen/krs-approval', icon: Settings },
+          { name: 'Jadwal Mengajar', href: '/dosen/jadwal', icon: CalendarDays },
+          { name: 'Input Nilai', href: '/dosen/input-nilai', icon: ClipboardCheck },
+          { name: 'Persetujuan KRS', href: '/dosen/krs-approval', icon: CheckSquare },
         ];
       case 'admin_akademik':
         return [
@@ -62,15 +83,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       case 'admin_keuangan':
         return [
           { name: 'Dashboard', href: '/admin-keuangan/dashboard', icon: LayoutDashboard },
-          { name: 'Manajemen Tagihan', href: '/admin-keuangan/tagihan', icon: DollarSign },
-          { name: 'Verifikasi Pembayaran', href: '/admin-keuangan/verifikasi', icon: Settings },
-          { name: 'Laporan Keuangan', href: '/admin-keuangan/laporan', icon: DollarSign },
+          { name: 'Manajemen Tagihan', href: '/admin-keuangan/tagihan', icon: ListChecks },
+          { name: 'Verifikasi Pembayaran', href: '/admin-keuangan/verifikasi', icon: BadgeCheck },
+          { name: 'Laporan Keuangan', href: '/admin-keuangan/laporan', icon: Landmark },
         ];
       case 'lppm':
         return [
           { name: 'Dashboard', href: '/lppm/dashboard', icon: LayoutDashboard },
-          { name: 'Manajemen KKM', href: '/lppm/kkm', icon: GraduationCap },
-          { name: 'Laporan', href: '/lppm/laporan', icon: Settings },
+          { name: 'Manajemen KKM', href: '/lppm/kkm', icon: NotebookText },
+          { name: 'Laporan', href: '/lppm/laporan', icon: FileText },
         ];
       default:
         return [
@@ -84,21 +105,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div 
-        className={`bg-white shadow-md transform transition-transform duration-300 ease-in-out ${
+      <div
+        className={`bg-card text-card-foreground shadow-md transform transition-transform duration-300 ease-in-out ${
           sidebarOpen ? 'w-64' : 'w-20'
         } fixed h-full z-30 flex flex-col`}
       >
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           {sidebarOpen && (
-            <div className="flex items-center space-x-2">
-              <GraduationCap className="h-6 w-6 text-indigo-600" />
-              <span className="text-xl font-bold text-gray-800">myUniba</span>
-            </div>
+            <Link to="/dashboard" className="flex items-center space-x-2">
+              <img src={logoUniba} alt="Logo myUniba" className="h-8 w-auto" /> {/* Logo */}
+              <span className="text-xl font-bold">myUniba</span>
+            </Link>
           )}
-          <button 
+          {!sidebarOpen && (
+             <img src={logoUniba} alt="Logo myUniba" className="h-8 w-auto mx-auto" /> /* Logo kecil saat collapsed */
+          )}
+           <button
             onClick={toggleSidebar}
-            className="p-1 rounded-md hover:bg-gray-100"
+            className={`p-1 rounded-md hover:bg-accent ${sidebarOpen ? '' : 'absolute top-4 right-4'}`} // Posisi tombol toggle
+            aria-label={sidebarOpen ? "Tutup sidebar" : "Buka sidebar"}
           >
             {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -109,73 +134,71 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <ul className="space-y-1 px-2">
               {navigationItems.map((item) => (
                 <li key={item.name}>
-                  <a
-                    href={item.href}
-                    className="flex items-center p-3 text-gray-700 rounded-lg hover:bg-gray-100 group transition-colors"
+                  <Link
+                    to={item.href}
+                    className="flex items-center p-3 text-sm rounded-lg hover:bg-accent hover:text-accent-foreground group transition-colors"
                   >
-                    <item.icon className="h-5 w-5 text-gray-500 group-hover:text-gray-700" />
+                    <item.icon className="h-5 w-5 text-muted-foreground group-hover:text-accent-foreground" />
                     {sidebarOpen && (
                       <span className="ml-3">{item.name}</span>
                     )}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </nav>
         </div>
 
-        <div className="p-4 border-t">
-          <div className="flex items-center">
+        <div className="p-4 border-t border-border">
+          <div className={`flex items-center ${sidebarOpen ? '' : 'justify-center'}`}>
             <div className="flex-shrink-0">
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-10 h-10" />
+               {/* Placeholder avatar */}
+               <div className="bg-muted border-2 border-dashed rounded-full w-10 h-10 flex items-center justify-center text-muted-foreground">
+                 {user?.username ? user.username.charAt(0).toUpperCase() : '?'}
+               </div>
             </div>
             {sidebarOpen && (
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">{user?.username}</p>
-                <p className="text-xs font-medium text-gray-500 capitalize">{user?.role.replace('_', ' ')}</p>
+              <div className="ml-3 overflow-hidden">
+                <p className="text-sm font-medium truncate">{user?.username}</p>
+                <p className="text-xs text-muted-foreground capitalize truncate">{user?.role.replace('_', ' ')}</p>
               </div>
             )}
           </div>
-          <Button 
-            onClick={handleLogout} 
-            variant="outline" 
-            className="w-full mt-4"
-          >
-            Logout
-          </Button>
+          {sidebarOpen && (
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="w-full mt-4"
+              size="sm"
+            >
+              Logout
+            </Button>
+           )}
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className={`flex-1 flex flex-col overflow-hidden ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
-        {/* Header */}
-        <header className="bg-white shadow-sm z-10">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center">
-              <button 
-                onClick={toggleSidebar}
-                className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            </div>
+      {/* Main Content Area */}
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out ${sidebarOpen ? 'ml-64' : 'ml-20'}`}>
+        {/* Header (Optional, bisa dihapus jika tidak perlu header terpisah) */}
+        {/*
+        <header className="bg-card shadow-sm z-10 border-b border-border">
+          <div className="flex items-center justify-between p-4 h-16">
+            <div/> // Spacer
             <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-gray-700 capitalize">
-                {user?.role.replace('_', ' ')}
-              </span>
-              <div className="h-8 w-8 rounded-full bg-gray-200 border-2 border-dashed" />
+               // Konten header jika ada, misal notifikasi, dll.
             </div>
           </div>
         </header>
+        */}
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 bg-gray-50">
+        <main className="flex-1 overflow-y-auto p-6 bg-background">
           {children}
         </main>
 
         {/* Footer */}
-        <footer className="bg-white border-t py-4">
-          <div className="text-center text-sm text-gray-500">
+        <footer className="bg-card border-t border-border py-4">
+          <div className="text-center text-sm text-muted-foreground">
             © {new Date().getFullYear()} Universitas Bina Bangsa. All rights reserved.
           </div>
         </footer>

@@ -1,11 +1,11 @@
-import postcssNesting from 'postcss-nesting';
+// import postcssNesting from 'postcss-nesting'; // Tidak diperlukan di v4
 import tailwindcss from '@tailwindcss/postcss';
-import autoprefixer from 'autoprefixer';
+// import autoprefixer from 'autoprefixer'; // Tidak diperlukan di v4
 
 export default {
   plugins: [
-    postcssNesting(),
+    // postcssNesting(), // Tidak diperlukan di v4
     tailwindcss(),
-    autoprefixer(),
+    // autoprefixer(), // Tidak diperlukan di v4
   ],
 };

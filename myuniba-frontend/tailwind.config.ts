@@ -1,10 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  // content array dihapus, v4 mendeteksi secara otomatis
   darkMode: "class",
   theme: {
     extend: {

@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff } from 'lucide-react';
 import { register } from '@/services/auth';
-import backgroundImage from '@/assets/images/background.jpg';
-import logo from '@/assets/images/logo uniba.png';
+import backgroundImage from '@/assets/background.jpg'; // Ganti path jika berbeda
+import logo from '@/assets/logo uniba.png'; // Ganti path jika berbeda
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -28,11 +28,18 @@ export default function RegisterPage() {
     setError('');
 
     try {
+      // Asumsi role default untuk registrasi awal adalah 'calon_mahasiswa'
       await register(username, password, 'calon_mahasiswa');
-      // Redirect to login after successful registration
+      // Beri notifikasi sukses atau langsung redirect
+      alert('Pendaftaran berhasil! Silakan login.');
       navigate('/login');
     } catch (err: any) {
-      setError(err.message || 'Pendaftaran gagal. Silakan coba lagi.');
+      // Tangani error spesifik dari API jika ada (misal: email sudah terdaftar)
+      if (err.message && err.message.includes('unique constraint')) {
+        setError('Email sudah terdaftar. Silakan gunakan email lain atau login.');
+      } else {
+        setError(err.message || 'Pendaftaran gagal. Silakan coba lagi.');
+      }
     } finally {
       setLoading(false);
     }
@@ -45,10 +52,20 @@ export default function RegisterPage() {
     >
       <div className="absolute inset-0 bg-black opacity-50" />
       <div className="relative w-full max-w-4xl mx-auto">
-        <Card className="grid lg:grid-cols-2 overflow-hidden rounded-2xl shadow-2xl">
+        <Card className="grid lg:grid-cols-2 overflow-hidden rounded-2xl shadow-2xl bg-card">
+          {/* Kolom Kiri: Logo dan Info (Hidden on Mobile) */}
+          <div className="hidden lg:flex flex-col items-center justify-center bg-indigo-600 p-8 text-white">
+             <img src={logo} alt="Logo UNIBA" className="w-40 mb-6" />
+            <h2 className="text-3xl font-bold text-center">Selamat Datang di myUniba</h2>
+            <p className="mt-4 text-center text-indigo-200">
+              Satu portal untuk semua kebutuhan akademik Anda. Mulai pendaftaran Anda sekarang.
+            </p>
+          </div>
+
+          {/* Kolom Kanan: Form Register */}
           <div className="p-8">
-            <CardHeader className="space-y-1 p-0 mb-6">
-              <img src={logo} alt="Logo UNIBA" className="w-24 mb-4" />
+            <CardHeader className="space-y-1 p-0 mb-6 text-center lg:text-left">
+              <img src={logo} alt="Logo UNIBA" className="w-20 mb-4 mx-auto lg:mx-0 lg:hidden" /> {/* Logo kecil untuk mobile */}
               <CardTitle className="text-2xl">Buat Akun Baru</CardTitle>
               <CardDescription>
                 Daftar untuk menjadi calon mahasiswa myUniba.
@@ -57,7 +74,7 @@ export default function RegisterPage() {
             <CardContent className="p-0">
               <form onSubmit={handleSubmit}>
                 {error && (
-                  <div className="mb-4 text-red-500 text-sm bg-red-100 p-3 rounded-md">
+                  <div className="mb-4 text-red-500 text-sm bg-red-100 p-3 rounded-md border border-red-300">
                     {error}
                   </div>
                 )}
@@ -71,6 +88,7 @@ export default function RegisterPage() {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       required
+                      className="bg-input/50"
                     />
                   </div>
                   <div className="space-y-2 relative">
@@ -78,15 +96,18 @@ export default function RegisterPage() {
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Masukkan password"
+                      placeholder="Masukkan password (minimal 8 karakter)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      minLength={8}
+                      className="bg-input/50"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-9"
+                      className="absolute right-3 top-9 text-muted-foreground"
+                      aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -100,6 +121,8 @@ export default function RegisterPage() {
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
+                      minLength={8}
+                      className="bg-input/50"
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
@@ -107,20 +130,13 @@ export default function RegisterPage() {
                   </Button>
                 </div>
               </form>
-              <div className="mt-4 text-center text-sm">
+              <div className="mt-4 text-center text-sm text-muted-foreground">
                 Sudah punya akun?{' '}
-                <Link to="/login" className="underline text-indigo-600">
+                <Link to="/login" className="underline text-indigo-600 hover:text-indigo-800">
                   Login di sini
                 </Link>
               </div>
             </CardContent>
-          </div>
-          <div className="hidden lg:flex flex-col items-center justify-center bg-indigo-600 p-8 text-white">
-             <img src={logo} alt="Logo UNIBA" className="w-40 mb-6" />
-            <h2 className="text-3xl font-bold text-center">Selamat Datang di myUniba</h2>
-            <p className="mt-4 text-center text-indigo-200">
-              Satu portal untuk semua kebutuhan akademik Anda.
-            </p>
           </div>
         </Card>
       </div>
